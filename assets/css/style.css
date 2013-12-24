@@ -1,0 +1,64 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: url(../img/logo.png) no-repeat 15px 300px;
+    background-size: 100px;
+    font-family: "Microsoft Yahei";
+}
+
+.ctrl {
+    margin: 20px;
+}
+
+.ctrl label {
+    margin-right: 10px;
+}
+
+.ctrl label:hover {
+    cursor: pointer;
+}
+
+.ctrl label input {
+    vertical-align: -2px;
+}
+
+.result {
+    background: #eee;
+    border: 1px solid #ccc;
+    height: 220px;
+    position: relative;
+    margin: 20px;
+    padding: 5px 10px;
+    overflow-y: auto;
+    outline: none;
+    font-family: Menlo, Monaco, Consolas, "Lucida Console", "Courier New", "Microsoft Yahei", monospace;
+}
+
+.result.over {
+    border: 2px dashed #ccc;
+}
+
+.result p {
+    margin: 1em 0;
+    font-weight: bold;
+}
+
+.action {
+    float: right;
+    margin-right: 20px;
+    margin-top: -6px;
+}
+
+.copy-button {
+    padding: 10px 15px;
+    background: #66B266;
+    color: #fff;
+}
+
+.copy-button:hover {
+    background: #393;
+    cursor: pointer;
+}
