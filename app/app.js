@@ -4,6 +4,20 @@ $(document).ready(function () {
     var proj = "";
     var el_ = document.getElementById("JS-Tapd");
 
+    chrome.storage.local.get('proj',function(item){
+        if(item['proj']){
+            proj=item['proj'];
+            console.log(proj);
+            chrome.storage.local.get('fileList',function(item){
+                if(item['fileList']){
+                    file_list=item['fileList'];
+                    console.log(file_list);
+                    generatorComment();
+                }
+            });
+        }
+    });
+
     el_.addEventListener('dragenter', handleDragEnter, false);
     el_.addEventListener('dragover', handleDragOver, false);
     el_.addEventListener('dragleave', handleDragLeave, false);
@@ -32,32 +46,61 @@ $(document).ready(function () {
         _.each(event.dataTransfer.items, function (file, index) {
             if (file.type === "text/html") {
                 chrome.fileSystem.getDisplayPath(file.webkitGetAsEntry(), function (path) {
-                    //路径中需要包括 f2e_proj
 
-                    //截取为 /proj-xxx/html/xxx 格式
-                    path = path.substring(path.indexOf("f2e_proj"));
+                    // 判断是否为活动页面
 
-                    //获取项目名 proj-xxxx
-                    var newproj = path.substring(9, path.indexOf("html")).replace(/\\/g, '');
+                     if(path.indexOf("proj-")===-1 && path.indexOf("act")!==-1){
+                         // 如果是活动页面
+                         path = path.substring(path.indexOf("act"));
 
-                    //重设项目名
-                    if (proj !== "" && proj !== newproj) {
-                        file_list = [];
-                        proj = newproj;
-                        setComment("");
-                    } else {
-                        proj = newproj;
-                    }
+                         // 获取项目名称 20xxxxxx-xxxx
 
+                         var newproj="act/"+path.substring(4,path.indexOf("html")).replace(/\\/g, '');
 
-                    //截取为 html/xxx 格式
-                    path = path.substring(proj.length + 10).replace(/\\/g, '/');
+                         //重设项目名
+                         if (proj !== "" && proj !== newproj) {
+                             file_list = [];
+                             proj = newproj;
+                             setComment("");
+                         } else {
+                             proj = newproj;
+                         }
+                         //截取为 html/xxx 格式
+                         path =path.substring(proj.length+1).replace(/\\/g, '/');
 
-                    file_list = _.union(file_list, path);
+                         file_list = _.union(file_list, path);
 
-                    if (index == item_length - 1) {
-                        generatorComment();
-                    }
+                         if (index == item_length - 1) {
+                             generatorComment();
+                         }
+                     }else{
+
+                         //如果不是活动页面
+
+                         //截取文件路径，形如： proj-xxx/html/xxx.html
+
+                         path = path.substring(path.indexOf("proj-"));
+
+                         //获取项目名 proj-xxxx
+                         var newproj = path.substring(0, path.indexOf("html")).replace(/\\/g, '');
+
+                         //重设项目名
+                         if (proj !== "" && proj !== newproj) {
+                             file_list = [];
+                             proj = newproj;
+                             setComment("");
+                         } else {
+                             proj = newproj;
+                         }
+                         //截取为 html/xxx 格式
+                         path = path.substring(proj.length+1).replace(/\\/g, '/');
+
+                         file_list = _.union(file_list, path);
+
+                         if (index == item_length - 1) {
+                             generatorComment();
+                         }
+                     }
                 });
             }
         });
@@ -111,6 +154,10 @@ $(document).ready(function () {
         setComment(tpl);
 
         $(".JS-Proj").html("[" + proj + "]");
+
+        chrome.storage.local.set({'proj':proj});
+
+        chrome.storage.local.set({'fileList': file_list});
     }
 
     function setComment(tpl) {
@@ -124,6 +171,7 @@ $(document).ready(function () {
         copyDiv.focus();
         document.execCommand('SelectAll');
         document.execCommand("copy");
+        chrome.storage.local.clear();
     });
 
     $(".JS-Ctrl label").click(function () {
