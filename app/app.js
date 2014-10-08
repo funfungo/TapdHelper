@@ -82,7 +82,11 @@ $(document).ready(function () {
                          path = path.substring(path.indexOf("proj-"));
 
                          //获取项目名 proj-xxxx
-                         var newproj = path.substring(0, path.indexOf("html")).replace(/\\/g, '');
+                         if(path.indexOf("\\src") != -1){
+                             var newproj = path.substring(0,path.indexOf("src")).replace(/\\/g, '');
+                         }else{
+                             var newproj = path.substring(0, path.indexOf("html")).replace(/\\/g, '');
+                         }
 
                          //重设项目名
                          if (proj !== "" && proj !== newproj) {
