@@ -4,13 +4,13 @@ $(document).ready(function () {
     var proj = "";
     var el_ = document.getElementById("JS-Tapd");
 
-    chrome.storage.local.get('proj',function(item){
-        if(item['proj']){
-            proj=item['proj'];
+    chrome.storage.local.get('proj', function (item) {
+        if (item['proj']) {
+            proj = item['proj'];
             console.log(proj);
-            chrome.storage.local.get('fileList',function(item){
-                if(item['fileList']){
-                    file_list=item['fileList'];
+            chrome.storage.local.get('fileList', function (item) {
+                if (item['fileList']) {
+                    file_list = item['fileList'];
                     console.log(file_list);
                     generatorComment();
                 }
@@ -47,68 +47,30 @@ $(document).ready(function () {
             if (file.type === "text/html") {
                 chrome.fileSystem.getDisplayPath(file.webkitGetAsEntry(), function (path) {
 
-                    // 判断是否为活动页面
+                    if (path.indexOf("f2e_proj") !== -1){
+                        path = path.substring(path.indexOf("f2e_proj")+9);
+                        //获取项目名 proj-xxxx or xxxx
+                        var newproj = path.substring(0,path.indexOf("\\"));
+                        //重设项目名
+                        if (proj !== "" && proj !== newproj) {
+                            file_list = [];
+                            proj = newproj;
+                            setComment("");
+                        } else {
+                            proj = newproj;
+                        }
+                        //截取为 html/xxx 格式
+                        path = path.substring(proj.length + 1).replace(/\\/g, '/');
 
-                     if(path.indexOf("proj-")===-1 && path.indexOf("act")!==-1){
-                         // 如果是活动页面
-                         path = path.substring(path.indexOf("act"));
+                        file_list = _.union(file_list, path);
 
-                         // 获取项目名称 20xxxxxx-xxxx
-
-                         var newproj="act/"+path.substring(4,path.indexOf("html")).replace(/\\/g, '');
-
-                         //重设项目名
-                         if (proj !== "" && proj !== newproj) {
-                             file_list = [];
-                             proj = newproj;
-                             setComment("");
-                         } else {
-                             proj = newproj;
-                         }
-                         //截取为 html/xxx 格式
-                         path =path.substring(proj.length+1).replace(/\\/g, '/');
-
-                         file_list = _.union(file_list, path);
-
-                         if (index == item_length - 1) {
-                             generatorComment();
-                         }
-                     }else{
-
-                         //如果不是活动页面
-
-                         //截取文件路径，形如： proj-xxx/html/xxx.html
-
-                         path = path.substring(path.indexOf("proj-"));
-
-                         //获取项目名 proj-xxxx
-                         if(path.indexOf("\\src") != -1){
-                             var newproj = path.substring(0,path.indexOf("src")).replace(/\\/g, '');
-                         }else{
-                             var newproj = path.substring(0, path.indexOf("html")).replace(/\\/g, '');
-                         }
-
-                         //重设项目名
-                         if (proj !== "" && proj !== newproj) {
-                             file_list = [];
-                             proj = newproj;
-                             setComment("");
-                         } else {
-                             proj = newproj;
-                         }
-                         //截取为 html/xxx 格式
-                         path = path.substring(proj.length+1).replace(/\\/g, '/');
-
-                         file_list = _.union(file_list, path);
-
-                         if (index == item_length - 1) {
-                             generatorComment();
-                         }
-                     }
+                        if (index == item_length - 1) {
+                            generatorComment();
+                        }
+                    }
                 });
             }
         });
-
         return false;
     }
 
@@ -152,14 +114,17 @@ $(document).ready(function () {
         tpl += '<p>## 预览地址</p>';
 
         _.each(file_list, function (file) {
-            tpl += "http://svn.tmt.io/" + proj + "/" + file + "<br>";
+            if(file.indexOf("src/") !== -1){
+                file = "dist" + file.substring(3);
+            }
+            tpl += "http://demo.tmt.io/" + proj + "/" + file + "<br>";
         });
 
         setComment(tpl);
 
         $(".JS-Proj").html("[" + proj + "]");
 
-        chrome.storage.local.set({'proj':proj});
+        chrome.storage.local.set({'proj': proj});
 
         chrome.storage.local.set({'fileList': file_list});
     }
